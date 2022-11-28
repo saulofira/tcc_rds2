@@ -1,0 +1,484 @@
+---
+title: "Analisando a Base de Filmes IMDB"
+author: "[Saulo Valentim](https://github.com/saulofender)"
+format: 
+  revealjs:
+    transition: fade
+    transition-speed: slow
+    slide-number: true
+    theme: solarized
+    logo: imagens/logo_imdb.jpg
+editor: visual
+---
+
+## Sobre o IMDB
+
+IMDB é um banco de dados on-line, ou seja, é a fonte mais abrangente e confiável que possui informações e estatísticas relacionadas a filmes, séries de televisão, videogames, conteúdo de streaming on-line, atores, diretores e outros profissionais da indústria cinematográfica.
+
+![](imagens/imagen_imdb.jpg){.absolute bottom="0" left="100" width="700" height="300"}
+
+## Pacotes e Base de Dados
+
+Carregando pacotes e bases de dados:
+
+```{r, echo=TRUE}
+# carregar pacotes
+library(tidyverse)
+library(lubridate)
+library(kableExtra)
+library(DT)
+
+# carregar bases
+imdb <- readRDS("dados/imdb_completa.rds")
+imdb_pessoas <- readRDS("dados/imdb_pessoas.rds")
+imdb_avaliacoes <- readRDS("dados/imdb_avaliacoes.rds")
+```
+
+[Para acessar as bases clique aqui!](https://github.com/curso-r/basesCursoR)
+
+##  {background-image="https://media2.giphy.com/media/UEHPcX1oZt80U/giphy.gif" background-size="15cm"}
+
+#### Vamos aos Desafios ???
+
+## 
+
+#### Qual o mês do ano com o maior número de filmes? E o dia do ano?
+
+```{r}
+num_film_mes <- imdb %>% 
+  mutate(
+    data_lancamento = as_date(data_lancamento),
+    mes = month(data_lancamento)
+  ) %>% 
+  count(mes) %>%
+  arrange(desc(n)) %>% 
+  filter(!is.na(mes)) %>% 
+  head(4)
+
+num_film_dia <- imdb %>% 
+  mutate(
+    data_lancamento = as_date(data_lancamento),
+    dia = day(data_lancamento)
+  ) %>% 
+  count(dia) %>%
+  arrange(desc(n)) %>% 
+  filter(!is.na(dia)) %>% 
+  head(4)
+```
+
+O mês com maior número de filmes foi o mês **`r num_film_mes$mes[1]`** que teve **`r num_film_mes$n[1]`** filmes, e o dia com maior número de filmes foi o dia **`r num_film_dia$dia[1]`** que teve **`r num_film_dia$n[1]`** filmes.
+
+::: panel-tabset
+### Mês
+
+```{r}
+num_film_mes %>%
+  datatable(colnames = c("Mês", "Quantidade de Filmes"), rownames = F,
+    options = list(dom = 't')) %>%
+  formatStyle('mes', backgroundColor = styleEqual(num_film_mes$mes[1], 'yellow'), fontWeight = 'bold') %>%
+  formatStyle('n', backgroundColor = styleEqual(num_film_mes$n[1], 'yellow'), fontWeight = 'bold')
+```
+
+### Dia
+
+```{r}
+num_film_dia %>%
+  datatable(colnames = c("Dia", "Quantidade de Filmes"), rownames = F, options = list(dom = 't')) %>%
+  formatStyle('dia', backgroundColor = styleEqual(num_film_dia$dia[1], 'yellow'), fontWeight = 'bold') %>%
+  formatStyle('n', backgroundColor = styleEqual(num_film_dia$n[1], 'yellow'), fontWeight = 'bold')
+```
+:::
+
+## 
+
+#### Qual o top 5 países com mais filmes na base?
+
+No gráfico abaixo os 5 países com mais filmes foram: **USA, France, UK, India e Italy**.
+
+```{r}
+imdb %>%
+  separate_rows(pais, sep = ", ") %>%
+  group_by(pais) %>%
+  summarise(qtd = n()) %>%
+  arrange(desc(qtd)) %>%
+  top_n(5) %>%
+  ungroup() %>%
+  mutate(
+    pais = lvls_reorder(pais, c(5, 1, 4, 2, 3)) 
+  ) %>%
+  ggplot() +
+  geom_col(aes(x = pais, y = qtd, fill = pais), show.legend = FALSE) +
+  geom_label(aes(x = pais, y = qtd/2, label = qtd)) +
+  theme_classic() +
+  labs(
+    title = "Top5 - Países com mais filmes.",
+    x = "País",
+    y = "Quantidade de filmes"
+  )
+```
+
+## 
+
+#### Liste todas as moedas que aparecem nas colunas "orcamento" e "receita" da base (imdb_completa).
+
+```{r}
+imdb %>%  
+  select(orcamento, receita) %>% 
+  drop_na(orcamento, receita) %>%  
+  mutate(
+    orcamento = str_replace(orcamento, "\\s.*$", ""),
+    receita = str_replace(orcamento, "\\s.*$", "")
+    ) %>%
+  unique() %>%
+  datatable(
+    colnames = c("Orçamento", "Receita"), rownames = F, 
+    extensions = 'Scroller', options = list(
+    deferRender = TRUE,
+    scrollY = 350,
+    scroller = TRUE
+    ))
+```
+
+## 
+
+#### Considerando apenas orçamentos e receitas em dólar (\$), qual o gênero com maior lucro? E com maior nota média?
+
+```{r}
+# função para calcular o lucro
+calcular_lucro <- function(base) {
+  base %>%  
+    drop_na(orcamento | receita) %>% 
+    separate(receita, into = c("moeda_receita", "receita"), sep = " ") %>%
+    separate(orcamento, into = c("moeda_orcamento", "orcamento"), sep = " ") %>%
+    filter(moeda_receita == "$", moeda_orcamento == "$") %>% 
+    mutate(across(c("receita", "orcamento"), as.numeric),
+           lucro = receita - orcamento)
+} 
+
+lucro_nota_media_genero <- calcular_lucro(imdb) %>% 
+  separate_rows(genero, sep=", ") %>% 
+  group_by(genero) %>% 
+  summarise(
+    lucro = sum(lucro), 
+    nota_media = mean(nota_imdb)
+    )
+
+# funcao auxiliar para gerar cor
+f_cor <- function(base_aux, col_1, col_2) {
+  base_aux <- lucro_nota_media_genero %>%  
+  select({{col_1}}, {{col_2}}) %>% 
+  slice_max(order_by = {{col_2}}, n=1)
+}
+```
+
+::: panel-tabset
+### Gênero Maior Lucro
+
+::: columns
+::: {.column width="20%"}
+O Gênero com maior lucro foi **Adventure**.
+:::
+
+::: {.column width="80%"}
+```{r}
+lucro_nota_media_genero %>% 
+  select(genero, lucro) %>% 
+  slice_max(order_by = lucro, n = 5) %>% 
+  mutate(genero = fct_reorder(genero, lucro)) %>%
+  ggplot(aes(x = genero, y = lucro)) +
+  geom_col() +
+  geom_col(
+    data = f_cor(lucro_nota_media_genero, genero, lucro),
+    fill = "#32CD32"
+    ) +
+  theme_classic() +
+  labs(
+    title = "Top5 - Gênero com maior lucro.",
+    x = "Gênero",
+    y = "Lucro ($)"
+  )
+```
+:::
+:::
+
+### Gênero Maior Nota Média
+
+::: columns
+::: {.column width="20%"}
+O Gênero com maior nota média foi **Film-Noir**.
+:::
+
+::: {.column width="80%"}
+```{r}
+lucro_nota_media_genero %>% 
+  select(genero, nota_media) %>% 
+  slice_max(order_by = nota_media, n = 5) %>% 
+  mutate(
+    nota_media = round(nota_media, digits = 2),
+    genero = fct_reorder(genero, nota_media)
+    ) %>% 
+  ggplot(aes(x = genero, y = nota_media)) +
+  geom_col() + 
+  geom_col(
+    data = f_cor(lucro_nota_media_genero, genero, nota_media),
+    fill = "#FFD700"
+    ) +
+  geom_label(
+    data = f_cor(lucro_nota_media_genero, genero, nota_media),
+    aes(x = genero, label = round(nota_media, 2))
+  ) +
+  theme_classic() +
+  labs(
+    title = "Top5 - Gênero com maior nota média.",
+    x = "Gênero",
+    y = "Nota Média"
+  )
+```
+:::
+:::
+:::
+
+##  {background-image="https://s.aficionados.com.br/imagens/spiderman-endgame.gif" background-size="14cm"}
+
+#### Dentre os filmes na base (imdb_completa), escolha o seu favorito. Então faça os itens a seguir:
+
+::: {.column width="30%"}
+Meu filme favorito é ...
+:::
+
+![](imagens/seta.gif){.absolute bottom="0" left="250" width="100" height="60"}
+
+##  {background-color="black" background-image="https://s2.glbimg.com/2C0hMRuCY_7NfDPjby4_Bjmq8Nc=/e.glbimg.com/og/ed/f/original/2018/03/22/avengers-infinity-war-official-poster-2018-4o.jpg" background-size="35cm"}
+
+#### `Avengers:Endgame`
+
+::: footer
+Produzido por: Marvel Studios
+:::
+
+## 
+
+#### Quem dirigiu o filme? Faça uma ficha dessa pessoa: idade (hoje em dia ou data de falecimento), onde nasceu, quantos filmes já dirigiu, qual o lucro médio dos filmes que dirigiu (considerando apenas valores em dólar) e outras informações que achar interessante (base imdb_pessoas).
+
+::: panel-tabset
+### Direção do Filme
+
+O filme foi dirigido pelos irmãos **Anthony Russo** e **Joe Russo**, ambos nasceram em Cleveland, Ohio, USA. Atualmente Anthony tem 52 anos e Joe 51 anos de idade.
+
+```{r}
+# função para calcular a idade
+calc_age <- function(birthDate, refDate = Sys.Date()) {
+  period <- as.period(interval(birthDate, refDate), unit = "year")
+  period$year
+} 
+
+imdb_pessoas %>% 
+  mutate(
+    data_nascimento = as_date(data_nascimento),
+    idade = calc_age(data_nascimento)
+    ) %>% 
+  filter(nome %in% c("Anthony Russo", "Joe Russo"), !is.na(data_nascimento)) %>%
+  select(nome, nome_nascimento, data_nascimento, idade, local_nascimento) %>% 
+  rename(
+    "Nome" = "nome", "Nome de Nascimento" = "nome_nascimento", 
+    "Data de Nascimento" = "data_nascimento", 
+    "Idade" = "idade", "Local de Nascimento" = "local_nascimento"
+  ) %>% 
+  kable(align = 'c', booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", font_size = 22)
+```
+
+### Ficha Diretor-1
+
+```{r}
+# diretor_1
+Anthony_russo <- imdb %>% 
+  separate_rows(direcao, sep=", ") %>%  
+  filter(direcao == "Anthony Russo") %>% 
+  arrange(desc(data_lancamento)) %>% 
+  calcular_lucro() %>% 
+  mutate(lucro_medio = scales::dollar(mean(lucro))) %>% 
+  select(titulo_original, data_lancamento, direcao, genero, lucro_medio) 
+```
+
+Anthony Russo já dirigiu `r length(Anthony_russo$titulo_original)` filmes, sendo o lucro médio dos filmes dirigidos por ele no valor de **`r unique(Anthony_russo$lucro_medio)`**.
+
+```{r}
+Anthony_russo %>% 
+  select(-lucro_medio) %>% 
+  rename(
+    "Título do Filme" = "titulo_original", 
+    "Data de Lançamento" = "data_lancamento", "Direção" = "direcao",
+    "Gênero" = "genero"
+  ) %>% 
+  kable(align = 'c', booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", font_size = 20)
+```
+
+### Ficha Diretor-2
+
+```{r}
+# diretor_2
+Joe_russo <- imdb %>% 
+  separate_rows(direcao, sep=", ") %>%  
+  filter(direcao == "Joe Russo") %>% 
+  arrange(desc(data_lancamento)) %>% 
+  calcular_lucro() %>% 
+  mutate(lucro_medio = scales::dollar(mean(lucro))) %>% 
+  select(titulo_original, data_lancamento, direcao, genero, lucro_medio) 
+```
+
+Joe Russo já dirigiu `r length(Joe_russo$titulo_original)` filmes, sendo o lucro médio dos filmes dirigidos por ele no valor de **`r unique(Joe_russo$lucro_medio)`**.
+
+```{r}
+Joe_russo %>% 
+  select(-lucro_medio) %>% 
+  rename(
+    "Título do Filme" = "titulo_original", 
+    "Data de Lançamento" = "data_lancamento", "Direção" = "direcao",
+    "Gênero" = "genero"
+  ) %>% 
+  kable(align = 'c', booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", font_size = 20)
+```
+:::
+
+## 
+
+#### Qual a posição desse filme no ranking de notas do IMDB? E no ranking de lucro (considerando apenas valores em dólar)?
+
+O filme **Avengers: Endgame** no ranking de "notas" está na 9º posição, já no ranking de "lucro" ocupa a 2º posição, considerando apenas valores em dólares na base IMDB.
+
+```{r}
+posicao_filme <- imdb %>% 
+  calcular_lucro() %>% 
+  filter(moeda_orcamento == "$", moeda_receita == "$") %>% 
+  mutate(
+    ranking_nota = dense_rank(desc(nota_imdb)),
+    ranking_lucro = dense_rank(desc(lucro))
+    ) %>%
+  filter(
+    titulo == "Avengers: Endgame", 
+    direcao == "Anthony Russo, Joe Russo"
+    ) %>% 
+  select(titulo, direcao, ranking_nota, ranking_lucro) 
+
+posicao_filme %>% 
+  rename(
+    "Título do Filme" = "titulo", "Direção" = "direcao",
+    "Ranking Nota" = "ranking_nota", "Ranking Lucro" = "ranking_lucro"
+  ) %>% 
+  kable(align = 'c', booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", font_size = 24)
+```
+
+![](imagens/dancing.gif){.absolute bottom="0" left="250" width="500" height="270"}
+
+## 
+
+#### Em que dia esse filme foi lançado? E dia da semana? Algum outro filme foi lançado no mesmo dia? Quantos anos você tinha nesse dia?
+
+::: panel-tabset
+### Lançamento do Filme
+
+**Avengers: Endgame** foi lançado na quarta-feira no ano 2019.
+
+```{r}
+dt_lancamento <- imdb %>% 
+  filter(titulo == "Avengers: Endgame", direcao == "Anthony Russo, Joe Russo") %>% 
+  select(titulo, data_lancamento) %>% 
+  mutate(dia_semana = weekdays(as_date(data_lancamento)))
+
+dt_lancamento %>% 
+  rename(
+    "Título do Filme" = "titulo", "Data de Lançamento" = "data_lancamento",
+    "Dia da Semana" = "dia_semana"
+  ) %>% 
+  kable(align = 'c', booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", font_size = 20)
+```
+
+![](imagens/avangers.gif){.absolute bottom="0" left="250" width="500" height="230"}
+
+### Outros Lançamentos
+
+Seguem outros filmes que foram lançados no mesmo dia:
+
+```{r}
+outros_lancamentos <- imdb %>% 
+  filter(
+    data_lancamento == "2019-04-24",
+    titulo_original != "Avengers: Endgame"
+    ) %>%
+  select(titulo_original, data_lancamento, direcao) 
+
+outros_lancamentos %>% 
+  rename(
+    "Título do Filme" = "titulo_original", "Data de Lançamento" = "data_lancamento",
+    "Direção" = "direcao"
+  ) %>% 
+  kable(align = 'c', booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", font_size = 18)
+```
+
+### Idade
+
+Nesse dia eu tinha 32 anos de idade.
+
+```{r}
+calcular_minha_idade <- imdb %>% 
+  filter(titulo_original == "Avengers: Endgame") %>% 
+  mutate(
+    data_lancamento = as_date(data_lancamento), 
+    minha_data_nascimento = as_date("1986-10-26"),
+    minha_idade = year(as.period(interval(minha_data_nascimento, data_lancamento)))
+    ) %>% 
+  select(titulo_original, data_lancamento, minha_data_nascimento, minha_idade)
+
+calcular_minha_idade %>% 
+  rename(
+    "Título do Filme" = "titulo_original", "Data de Lançamento" = "data_lancamento",
+    "Minha Data de Nascimento" = "minha_data_nascimento", "Minha Idade" = "minha_idade"
+  ) %>% 
+  kable(align = 'c', booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", font_size = 20)
+```
+
+![](imagens/simpson.gif){.absolute bottom="0" left="250" width="500" height="270"}
+:::
+
+## 
+
+#### Faça um gráfico representando a distribuição da nota atribuída a esse filme por idade (base imdb_avaliacoes).
+
+O gráfico mostra a distribuição das notas atribuídas ao filme **Avengers: Endgame** por faixa de idade.
+
+```{r}
+imdb_avaliacoes %>% 
+  filter(id_filme == "tt4154796") %>%  
+  select(contains("nota_media_idade_")) %>% 
+  pivot_longer(
+    everything(), 
+    names_to = "faixa_etaria", 
+    values_to = "nota_media"
+    ) %>% 
+  mutate(across(faixa_etaria, str_remove_all, pattern = ".*\\idade_")) %>% 
+  ggplot() +
+  geom_col(
+    aes(x = faixa_etaria, y = nota_media, fill = faixa_etaria), show.legend = FALSE
+    ) + 
+  geom_label(aes(x = faixa_etaria, y = nota_media/2, label = nota_media)) +
+  theme_classic() +
+  scale_fill_brewer(palette = "BrBG") +
+  labs(
+    title = "Distribuição de notas atribuídas por faixa etária.",
+    x = "Faixa Etária", 
+    y = "Nota Média"
+    )
+```
+
+##  {background-color="black" background-image="https://media.tenor.com/TfF4OqKClmcAAAAd/iron-man-avengers.gif" background-size="22cm"}
+
+::: footer
+FIM!
+:::
