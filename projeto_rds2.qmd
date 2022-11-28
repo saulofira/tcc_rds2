@@ -4,7 +4,6 @@ author: "[Saulo Valentim](https://github.com/saulofender)"
 format: 
   revealjs:
     transition: fade
-    transition-speed: slow
     slide-number: true
     theme: solarized
     logo: imagens/logo_imdb.jpg
