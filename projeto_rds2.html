@@ -411,15 +411,16 @@
 <p>Carregando pacotes e bases de dados:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># carregar pacotes</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">library</span>(lubridate)</span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="fu">library</span>(kableExtra)</span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="fu">library</span>(DT)</span>
-<span id="cb1-6"><a href="#cb1-6"></a></span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="co"># carregar bases</span></span>
-<span id="cb1-8"><a href="#cb1-8"></a>imdb <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"dados/imdb_completa.rds"</span>)</span>
-<span id="cb1-9"><a href="#cb1-9"></a>imdb_pessoas <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"dados/imdb_pessoas.rds"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10"></a>imdb_avaliacoes <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"dados/imdb_avaliacoes.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">library</span>(quarto)</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="fu">library</span>(DT)</span>
+<span id="cb1-7"><a href="#cb1-7"></a></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="co"># carregar bases</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>imdb <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"dados/imdb_completa.rds"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10"></a>imdb_pessoas <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"dados/imdb_pessoas.rds"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11"></a>imdb_avaliacoes <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"dados/imdb_avaliacoes.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><a href="https://github.com/curso-r/basesCursoR">Para acessar as bases clique aqui!</a></p>
 </section>
@@ -441,8 +442,8 @@
 <div class="cell">
 <div class="cell-output-display">
 
-<div id="htmlwidget-1d6701823bb7b698c0ca" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1d6701823bb7b698c0ca">{"x":{"filter":"none","vertical":false,"data":[[10,9,3,11],[8734,7924,7435,7094]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Mês<\/th>\n      <th>Quantidade de Filmes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,1]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-weight':'bold','background-color':value == 10 ? \"yellow\" : null});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-weight':'bold','background-color':value == 8734 ? \"yellow\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-083b282b2e7fc74fe266" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-083b282b2e7fc74fe266">{"x":{"filter":"none","vertical":false,"data":[[10,9,3,11],[8734,7924,7435,7094]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Mês<\/th>\n      <th>Quantidade de Filmes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,1]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-weight':'bold','background-color':value == 10 ? \"yellow\" : null});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-weight':'bold','background-color':value == 8734 ? \"yellow\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
@@ -450,8 +451,8 @@
 <div class="cell">
 <div class="cell-output-display">
 
-<div id="htmlwidget-6922786e1a678908dfef" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-6922786e1a678908dfef">{"x":{"filter":"none","vertical":false,"data":[[1,15,14,25],[7260,2831,2728,2727]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Dia<\/th>\n      <th>Quantidade de Filmes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,1]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-weight':'bold','background-color':value == 1 ? \"yellow\" : null});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-weight':'bold','background-color':value == 7260 ? \"yellow\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<div id="htmlwidget-c0c589be07462b3dd118" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-c0c589be07462b3dd118">{"x":{"filter":"none","vertical":false,"data":[[1,15,14,25],[7260,2831,2728,2727]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Dia<\/th>\n      <th>Quantidade de Filmes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,1]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-weight':'bold','background-color':value == 1 ? \"yellow\" : null});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-weight':'bold','background-color':value == 7260 ? \"yellow\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
@@ -470,8 +471,8 @@
 <div class="cell">
 <div class="cell-output-display">
 
-<div id="htmlwidget-e90d9b320715167df9f6" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e90d9b320715167df9f6">{"x":{"filter":"none","vertical":false,"extensions":["Scroller"],"data":[["$","NOK","GBP","DEM","FRF","SEK","ITL","JPY","RUR","AUD","HKD","CAD","ESP","IEP","DKK","BEF","INR","EUR","ISK","PHP","FIM","BRL","CZK","NLG","ATS","CNY","BND","HUF","THB","ZAR","SGD","KRW","PLN","EGP","MXN","NZD","CHF","SKK","BGL","EEK","TWD","LVL","TRL","YUM","ARS","MYR","IDR","UAH","RON","VEB","LTL","CLP","PKR","NGN","COP","HRK","IRR","DOP","ILS","AMD","BDT","AED"],["$","NOK","GBP","DEM","FRF","SEK","ITL","JPY","RUR","AUD","HKD","CAD","ESP","IEP","DKK","BEF","INR","EUR","ISK","PHP","FIM","BRL","CZK","NLG","ATS","CNY","BND","HUF","THB","ZAR","SGD","KRW","PLN","EGP","MXN","NZD","CHF","SKK","BGL","EEK","TWD","LVL","TRL","YUM","ARS","MYR","IDR","UAH","RON","VEB","LTL","CLP","PKR","NGN","COP","HRK","IRR","DOP","ILS","AMD","BDT","AED"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Orçamento<\/th>\n      <th>Receita<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"deferRender":true,"scrollY":350,"scroller":true,"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-9900366c1122a19339d0" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-9900366c1122a19339d0">{"x":{"filter":"none","vertical":false,"extensions":["Scroller"],"data":[["$","NOK","GBP","DEM","FRF","SEK","ITL","JPY","RUR","AUD","HKD","CAD","ESP","IEP","DKK","BEF","INR","EUR","ISK","PHP","FIM","BRL","CZK","NLG","ATS","CNY","BND","HUF","THB","ZAR","SGD","KRW","PLN","EGP","MXN","NZD","CHF","SKK","BGL","EEK","TWD","LVL","TRL","YUM","ARS","MYR","IDR","UAH","RON","VEB","LTL","CLP","PKR","NGN","COP","HRK","IRR","DOP","ILS","AMD","BDT","AED"],["$","NOK","GBP","DEM","FRF","SEK","ITL","JPY","RUR","AUD","HKD","CAD","ESP","IEP","DKK","BEF","INR","EUR","ISK","PHP","FIM","BRL","CZK","NLG","ATS","CNY","BND","HUF","THB","ZAR","SGD","KRW","PLN","EGP","MXN","NZD","CHF","SKK","BGL","EEK","TWD","LVL","TRL","YUM","ARS","MYR","IDR","UAH","RON","VEB","LTL","CLP","PKR","NGN","COP","HRK","IRR","DOP","ILS","AMD","BDT","AED"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Orçamento<\/th>\n      <th>Receita<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"deferRender":true,"scrollY":350,"scroller":true,"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
@@ -1037,7 +1038,7 @@
         transition: 'fade',
 
         // Transition speed (default/fast/slow)
-        transitionSpeed: 'slow',
+        transitionSpeed: 'default',
 
         // Transition style for full page slide backgrounds
         // (none/fade/slide/convex/concave/zoom)
