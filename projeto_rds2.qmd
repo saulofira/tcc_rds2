@@ -22,7 +22,6 @@ Carregando pacotes e bases de dados:
 
 ```{r, echo=TRUE}
 # carregar pacotes
-library(quarto)
 library(tidyverse)
 library(lubridate)
 library(kableExtra)
